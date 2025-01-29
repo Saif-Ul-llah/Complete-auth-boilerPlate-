@@ -1,0 +1,51 @@
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  schemas  = ["auth", "public"]
+}
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+
+}
+model User {
+    id        Int     @id @default(autoincrement())
+    firstName String
+    lastName  String
+    email     String  @unique
+    password  String
+    Role      Role    @default(USER)
+    IsActive  Boolean @default(false)
+    createdAt DateTime @default(now())
+    verification    UserVerification?
+
+    @@schema("auth")
+}
+
+model UserVerification {
+    id                Int                @id @default(autoincrement())
+    userId            Int                @unique
+    resetOtp          Int?
+    resetOtpExpiresAt DateTime?
+    isEmailVerified   VerificationStatus @default(NOT_VERIFIED)
+    user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@schema("auth")
+}
+
+enum Role {
+    USER
+    BUILDER
+    CONSULTANT
+    PRE_INSPECTOR
+
+    @@schema("auth")
+}
+
+enum VerificationStatus {
+    VERIFIED
+    NOT_VERIFIED
+
+    @@schema("auth")
+}
+
